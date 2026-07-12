@@ -1,0 +1,5 @@
+{
+  "parent": "neoforge:item/bucket",
+  "fluid": "createliquidmineral:molten_netherite",
+  "loader": "neoforge:fluid_container"
+}
