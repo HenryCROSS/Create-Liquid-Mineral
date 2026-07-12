@@ -102,7 +102,7 @@ JSON 数组里每一项就是一种流体：
 | 字段 | 类型 | 含义 |
 |---|---|---|
 | `id` | 字符串，必填 | 流体的注册名（也用来推导桶物品、方块、默认贴图文件名） |
-| `enabled` | 布尔值或 `null` | `false` = 这个流体完全不注册——没有流体、没有方块、没有桶、创造模式栏也不会出现，就跟这条目不存在一样。`true`/`null`/不填 = 照常注册。 |
+| `enabled` | 布尔值或 `null` | `false` = 这个流体完全不注册——没有流体、没有方块、没有桶、创造模式栏也不会出现，就跟这条目不存在一样。`true`/`null`/不填 = 照常注册。**这个判断在 `requiredMod` 之前**：就算 `requiredMod` 列的前置全都装了，只要 `"enabled": false`，这个流体照样不会注册。 |
 | `texture` | 字符串 | 取值 `"lava"`、`"generated"`、`"default"`、`"water"` 之一。缺失或写了识别不了的值 → 自动退回 `"default"`。详见下表。 |
 | `physics` | 字符串 | `"lava"` 或 `"water"` 预设；填 `"custom"` 则从一个中性基线出发，完全由下面这些字段决定行为。缺失或识别不了的值 → 退回 `"water"`。详见下方[「物理预设 vs. `"custom"`」](#物理预设-vs-custom)。 |
 | `tint` | 十六进制颜色字符串或 `null` | 给流体贴图染色，例如 `"#FF5A1F"`。在 `"water"` 贴图上染色效果最干净；用在 `"lava"` 贴图上会偏暖色，因为那张贴图本身就是橙色的。如果贴图本身已经带颜色（所有内置的 `"generated"` 贴图都是），就留 `null`。 |
@@ -116,7 +116,7 @@ JSON 数组里每一项就是一种流体：
 | `canSwim` / `canDrown` / `canConvertToSource` / `canHydrate` / `canExtinguish` | 布尔值或 `null` | 单独的物理行为开关（能不能游泳、会不会淹死、流动的能不能变成水源、会不会给耕地保湿、能不能灭火）。`null` 就用物理预设的值。 |
 | `burnsEntities` | 布尔值 | `true` = 像熔岩一样造成伤害/点燃；`false`/不填 = 无害 |
 | `protectsFamily` | 布尔值 | `true` = 对熔岩类伤害免疫的生物同样免疫这个流体；`false`/不填 = 这个流体有自己独立的免疫族群 |
-| `requiredMod` | 字符串或 `null` | 必须加载了这个 modid 才会注册这个流体（琥珀金用它来依赖 `createaddition`）。不需要前置就留 `null`/不填。 |
+| `requiredMod` | 字符串、字符串数组或 `null` | 一个（或多个）modid——其中**任意一个**已加载，这个流体就会注册。单个字符串（例如 `"createaddition"`）用法跟以前完全一样；想要"装了 A 或 B 任意一个就行"（不是"两个都要装"），就写成数组，比如 `["create", "createaddition"]`。不需要前置就留 `null`/不填。只有在 `enabled` 没被设成 `false` 的前提下才会检查——`enabled` 的优先级更高，见上面那行。 |
 | `translucent` | 布尔值或 `null` | `true` = 用半透明混合渲染这个流体（像原版水一样），而不是完全不透明（像原版熔岩，也是这里每个流体的默认值）。要有实际效果，贴图本身得真的带 alpha 通道——见[「贴图生成工具」](#贴图生成工具)的 `--alpha` 参数。`false`/`null`/不填 = 不透明。 |
 
 ### 物理预设 vs. `"custom"`
@@ -197,6 +197,9 @@ config/createliquidmineral/textures/block/<id>_flow.png
 
 **问：这个 mod 必须装 Create 吗？**
 答：是的，机械动力（Create）是硬性必需前置（见 `neoforge.mods.toml`）。Create: Additions & Synthetics 是可选的，只影响琥珀金那一种流体。
+
+**问：`requiredMod` 能写多个 mod 吗？**
+答：可以——`"requiredMod": ["create", "createaddition"]` 只要**任意一个**装了就会注册，不是要求两个都装。单个字符串照样能用，比如 `"requiredMod": "createaddition"`，只依赖一个 mod 的常见情况不用改写法。
 
 **问：想临时关掉某个流体，但又不想删掉它在配置里的设置，怎么办？**
 答：把那条目的 `"enabled"` 设成 `false`，重启游戏。它就完全不会被注册——跟删掉这条目效果一样——但配置文件里其他设置都还留着，以后想用回来直接改回 `true` 就行。

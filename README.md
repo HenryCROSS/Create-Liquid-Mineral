@@ -102,7 +102,7 @@ Each entry in the JSON array is one fluid:
 | Field | Type | Meaning |
 |---|---|---|
 | `id` | string, required | The fluid's registry name (also used to derive the bucket item, block, and default texture file names) |
-| `enabled` | boolean or `null` | `false` = this fluid isn't registered at all — no fluid, no block, no bucket, no creative-tab entry, as if the entry didn't exist. `true`/`null`/omitted = registers normally. |
+| `enabled` | boolean or `null` | `false` = this fluid isn't registered at all — no fluid, no block, no bucket, no creative-tab entry, as if the entry didn't exist. `true`/`null`/omitted = registers normally. Checked *before* `requiredMod` — an entry with `"enabled": false` stays off even if every mod in its `requiredMod` list is installed. |
 | `texture` | string | One of `"lava"`, `"generated"`, `"default"`, `"water"`. Missing/unrecognized → falls back to `"default"`. See below. |
 | `physics` | string | `"lava"` or `"water"` preset, or `"custom"` to start from a neutral baseline and rely entirely on the fields below. Missing/unrecognized → `"water"`. See [Physics presets vs. `"custom"`](#physics-presets-vs-custom). |
 | `tint` | hex string or `null` | Recolors the fluid's texture, e.g. `"#FF5A1F"`. Works cleanly on the `"water"` texture; on `"lava"` it'll skew warm since that texture is already orange. Leave `null` if the texture is already pre-colored (all the built-in `"generated"` textures are). |
@@ -116,7 +116,7 @@ Each entry in the JSON array is one fluid:
 | `canSwim` / `canDrown` / `canConvertToSource` / `canHydrate` / `canExtinguish` | boolean or `null` | Individual physics behaviors (can entities swim in it, can it drown them, can flowing turn into a source, does it hydrate farmland, does it put out fire). `null` keeps the physics preset's value. |
 | `burnsEntities` | boolean | `true` = damages/ignites entities like lava; `false`/omitted = harmless |
 | `protectsFamily` | boolean | `true` = entities immune to lava-family damage are also immune to this fluid; `false`/omitted = this fluid has its own separate immunity family |
-| `requiredMod` | string or `null` | A mod ID that must be loaded for this fluid to register at all (used for the electrum fluid's `createaddition` dependency). Leave `null`/omit for no requirement. |
+| `requiredMod` | string, array of strings, or `null` | A mod ID (or list of mod IDs) — at least one must be loaded for this fluid to register at all. A single string like `"createaddition"` still works exactly as before; use an array like `["create", "createaddition"]` when *any one* of several mods should be enough (OR, not AND). Leave `null`/omit for no requirement. Checked only if `enabled` isn't `false` — see `enabled` above, which always wins first. |
 | `translucent` | boolean or `null` | `true` = render this fluid with alpha blending (like vanilla water) instead of fully opaque (like vanilla lava, and the default for every fluid here). Needs a texture with an actual alpha channel baked in to have any visible effect — see [Generating textures](#generating-textures)'s `--alpha` flag. `false`/`null`/omitted = opaque. |
 
 ### Physics presets vs. `"custom"`
@@ -197,6 +197,9 @@ A: Yes, but it only comes out clean on `"texture": "water"`. Every other texture
 
 **Q: Does this need Create installed?**
 A: Yes — Create is a hard, required dependency (see `neoforge.mods.toml`). Create: Additions & Synthetics is optional and only affects the electrum fluid.
+
+**Q: Can `requiredMod` list more than one mod?**
+A: Yes — `"requiredMod": ["create", "createaddition"]` registers the fluid as soon as *either* mod is present, not both. Still works as a single plain string too, e.g. `"requiredMod": "createaddition"`, for the common case of just one dependency.
 
 **Q: How do I turn off one of the fluids without removing its config entry?**
 A: Set `"enabled": false` on that entry in `fluids.json` and restart. It won't be registered at all — same as if you'd deleted the entry — but the rest of its settings stay saved in the file in case you want it back later.

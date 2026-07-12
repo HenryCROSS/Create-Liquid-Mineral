@@ -17,13 +17,19 @@ import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 
 import cross.liqui_mineral.CreateLiquidMineral;
 import net.neoforged.fml.ModList;
@@ -75,7 +81,7 @@ public final class MoltenFluidConfigLoader {
             Boolean canExtinguish,
             Boolean burnsEntities,
             Boolean protectsFamily,
-            String requiredMod,
+            @JsonAdapter(RequiredModAdapter.class) List<String> requiredMod,
             Boolean translucent) {
 
         public MoltenFluidSpec toSpec() {
@@ -141,12 +147,61 @@ public final class MoltenFluidConfigLoader {
             return spec;
         }
 
-        /** False if explicitly disabled ({@code "enabled": false}), or if {@code requiredMod} names a mod that isn't loaded. */
+        /**
+         * False if explicitly disabled ({@code "enabled": false}) — checked first, before
+         * {@code requiredMod} is even looked at, so a disabled entry never registers regardless of
+         * what mods are installed. Otherwise, true if {@code requiredMod} is empty/unset, or if
+         * <em>any one</em> of the mod IDs it lists is loaded (OR, not AND — e.g.
+         * {@code ["create", "createaddition"]} registers as soon as either one is present).
+         */
         public boolean isAvailable() {
             if (Boolean.FALSE.equals(enabled)) {
                 return false;
             }
-            return requiredMod == null || requiredMod.isBlank() || ModList.get().isLoaded(requiredMod);
+            return requiredMod == null || requiredMod.isEmpty() || requiredMod.stream().anyMatch(ModList.get()::isLoaded);
+        }
+    }
+
+    /**
+     * Lets {@code requiredMod} in {@code fluids.json} be written either as a single string
+     * ({@code "requiredMod": "createaddition"}, the original/still-supported shape) or a JSON
+     * array of strings ({@code "requiredMod": ["create", "createaddition"]}) when a fluid should
+     * register as long as any one of several mods is present. Always serializes back out as a
+     * plain string for a single entry, or an array for more than one, whichever reads cleaner.
+     */
+    private static final class RequiredModAdapter extends TypeAdapter<List<String>> {
+        @Override
+        public void write(JsonWriter out, List<String> value) throws IOException {
+            if (value == null || value.isEmpty()) {
+                out.nullValue();
+            } else if (value.size() == 1) {
+                out.value(value.get(0));
+            } else {
+                out.beginArray();
+                for (String modId : value) {
+                    out.value(modId);
+                }
+                out.endArray();
+            }
+        }
+
+        @Override
+        public List<String> read(JsonReader in) throws IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            if (in.peek() == JsonToken.STRING) {
+                String modId = in.nextString();
+                return modId.isBlank() ? null : List.of(modId);
+            }
+            List<String> modIds = new ArrayList<>();
+            in.beginArray();
+            while (in.hasNext()) {
+                modIds.add(in.nextString());
+            }
+            in.endArray();
+            return modIds.isEmpty() ? null : List.copyOf(modIds);
         }
     }
 
@@ -182,7 +237,7 @@ public final class MoltenFluidConfigLoader {
             // Electrum — only registers if Create: Additions & Synthetics (modid "createaddition"),
             // which adds the electrum ingot this mod's fluid is themed after, is installed.
             new FluidEntry("molten_amber_gold", null, "generated", "lava", null, 5800, 4200, 1250, 15,
-                    null, null, null, null, null, null, null, null, true, true, "createaddition", null));
+                    null, null, null, null, null, null, null, null, true, true, List.of("createaddition"), null));
 
     public static final List<FluidEntry> ENTRIES = load();
     public static final List<MoltenFluidSpec> SPECS = ENTRIES.stream()
