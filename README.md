@@ -1,5 +1,9 @@
 # Create: Liquid Mineral
 
+<p align="center">
+  <img src="src/main/resources/createliquidmineral_logo.png" alt="Create: Liquid Mineral icon" width="128">
+</p>
+
 **[中文说明 →](README.zh.md)**
 
 ![Minecraft](https://img.shields.io/badge/Minecraft-1.21.1-3B8526) ![NeoForge](https://img.shields.io/badge/NeoForge-21.1.234%2B-1F6FEB) ![Create](https://img.shields.io/badge/Create-6.0.0%2B-F2A93B) ![License](https://img.shields.io/badge/License-GPLv3-blue)
