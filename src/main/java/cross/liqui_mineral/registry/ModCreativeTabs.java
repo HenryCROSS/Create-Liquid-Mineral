@@ -7,6 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -19,7 +20,14 @@ public final class ModCreativeTabs {
             CREATIVE_MODE_TABS.register("molten_minerals", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.createliquidmineral"))
                     .withTabsBefore(CreativeModeTabs.COMBAT)
-                    .icon(() -> ModItems.getBucket("molten_gold").getDefaultInstance())
+                    // Picks whichever fluid happens to be first in MoltenFluids.ALL (already
+                    // filtered down to enabled/available entries) instead of hardcoding a specific
+                    // id -- a hardcoded id that gets disabled via fluids.json's "enabled": false
+                    // (or gated behind a missing requiredMod) would otherwise NPE here, since
+                    // ModItems.getBucket only has entries for fluids that actually registered.
+                    .icon(() -> MoltenFluids.ALL.isEmpty()
+                            ? Items.BUCKET.getDefaultInstance()
+                            : ModItems.getBucket(MoltenFluids.ALL.get(0).id()).getDefaultInstance())
                     .displayItems((parameters, output) -> {
                         for (MoltenFluidSpec spec : MoltenFluids.ALL) {
                             output.accept(ModItems.getBucket(spec.id()));
