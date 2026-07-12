@@ -179,7 +179,7 @@ This works alongside `"texture": "generated"` in `fluids.json` — you still pic
 
 ## Generating textures
 
-The `"generated"` textures aren't hand-drawn — they're painted procedurally by a separate Python tool in the sibling `fluid_texture_gen/` project. See **[fluid_texture_gen/README.md](../fluid_texture_gen/README.md)** for full usage, every CLI flag, and how to reproduce/regenerate the 8 bundled fluids' textures — a good starting point if you want to hand off custom textures for others to drop into their own `config/createliquidmineral/textures/` folder as described above.
+The `"generated"` textures aren't hand-drawn — they're painted procedurally by **[FluidLoom](https://github.com/HenryCROSS/FluidLoom)**, a separate open-source Python tool. See its README for full usage, every CLI flag, and how to reproduce/regenerate the 8 bundled fluids' textures — a good starting point if you want to hand off custom textures for others to drop into their own `config/createliquidmineral/textures/` folder as described above.
 
 ## Known limitations
 

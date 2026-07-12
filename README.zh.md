@@ -179,7 +179,7 @@ config/createliquidmineral/textures/block/<id>_flow.png
 
 ## 贴图生成工具
 
-`"generated"` 贴图不是手绘的——是旁边 `fluid_texture_gen/` 这个独立 Python 工具程序化画出来的。完整用法、每个 CLI 参数、以及怎么复现/重新生成这 8 个内置流体的贴图，见 **[fluid_texture_gen/README.zh.md](../fluid_texture_gen/README.zh.md)**——如果你想画好贴图分享给别人，让他们按上面说的丢进自己的 `config/createliquidmineral/textures/` 文件夹使用，这个工具是个不错的起点。
+`"generated"` 贴图不是手绘的——是用 **[FluidLoom](https://github.com/HenryCROSS/FluidLoom)** 这个独立开源 Python 工具程序化画出来的。完整用法、每个 CLI 参数、以及怎么复现/重新生成这 8 个内置流体的贴图，见它的 README——如果你想画好贴图分享给别人，让他们按上面说的丢进自己的 `config/createliquidmineral/textures/` 文件夹使用，这个工具是个不错的起点。
 
 ## 已知局限
 
