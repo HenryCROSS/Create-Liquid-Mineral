@@ -12,6 +12,7 @@ Adds eight molten-metal fluids — iron, gold, copper, diamond (fantasy), nether
 - **Optional dependency**: Create: Additions & Synthetics 1.6.0+ (only needed for the electrum/amber-gold fluid — it's silently skipped if this mod isn't installed)
 - **Author**: CROSS
 - **License**: [GPLv3](LICENSE)
+- **AI disclosure**: This mod's code, texture-generation tooling, and documentation were developed with AI pair-programming assistance (Claude Code).
 
 ---
 
